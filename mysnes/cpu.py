@@ -13,7 +13,7 @@ from ctypes import Structure, Union, c_ushort, c_ubyte
 
 # Logging setup
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__) # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 # Constants
@@ -64,14 +64,35 @@ class Registers(Union):
     def __init__(self):
         Union.__init__(self)
         
+        # These are all initialized to zero by ctypes but this is done so PyLint isn't confused.
+        # pylint: disable=invalid-name
+        self.A = 0
+        self.B = 0
         self.C = 0
+        
+        self.XL = 0
+        self.XH = 0
         self.X = 0
+        
+        self.YL = 0
+        self.YH = 0
         self.Y = 0
+        
+        self.SPL = 0
+        self.SPH = 0
         self.SP = 0
+        
+        self.DPL = 0
+        self.DPH = 0
         self.DP = 0
+        
+        self.PCL = 0
+        self.PCH = 0
         self.PC = 0
+        
         self.PBR = 0
         self.DBR = 0
+        # pylint: enable=invalid-name
         
     def __getitem__(self, key):
         return getattr(self, key)
