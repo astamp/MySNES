@@ -4,6 +4,7 @@ __main__ - Main application
 
 # Standard library imports
 import sys
+import signal
 
 # Local imports
 from .console import Console
@@ -34,6 +35,7 @@ def main():
     log.info("SEGA?")
     
     console = Console(sys.argv[1])
+    signal.signal(signal.SIGINT, console.control_c_handler)
     console.run()
     
 if __name__ == "__main__":

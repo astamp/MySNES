@@ -2,7 +2,10 @@
 debugger - Makes heads or tails of all of this.
 """
 
+from __future__ import print_function
+
 # Standard library imports
+import sys
 
 # Logging setup
 import logging
@@ -21,16 +24,20 @@ class Debugger(object):
         self.cpu = console.cpu
         self.mem = console.mem
         
-        self.should_break = False
+        self.breakpoints = []
+        self.single_step = False
+        self.debugger_shortcut = []
+        self.dump_enabled = False
         
     def poll(self):
         """ Run one iteration of the debugger, going interactive if single-stepping. """
-        self.dump_regs()
-        self.preview_next_instruction()
-        log.debug("")
+        if self.dump_enabled:
+            log.debug("")
+            self.dump_regs()
+            self.preview_next_instruction()
         
-        if self.should_break:
-            raw_input()
+        if self.should_break():
+            self.enter_debugger()
             
     def dump_regs(self):
         """ Dump all registers. """
@@ -65,3 +72,92 @@ class Debugger(object):
             
         log.debug("Next instruction: 0x%02x (%s)", opcode, description)
         
+    def dump_stack(self, count):
+        """ Read next opcode and decode to the mnemonic. """
+        log.debug("Stack trace %u bytes:", count)
+        for address in range(self.cpu.regs.SP, self.cpu.regs.SP + count):
+            log.debug("00:%04x = 0x%02x", address, self.mem.read_byte(0x00, address))
+            
+    def should_break(self):
+        """ Return True if we should break now. """
+        return self.single_step or (self.cpu.regs.PBR, self.cpu.regs.PC) in self.breakpoints
+        
+    def enter_debugger(self):
+        """ Interactive debugger menu. """
+        while True:
+            self.preview_next_instruction()
+            
+            if len(self.debugger_shortcut) != 0:
+                print("[%s] >" % " ".join(self.debugger_shortcut), end=" ")
+            else:
+                print(">", end=" ")
+                
+            try:
+                cmd = raw_input().lower().split()
+            except KeyboardInterrupt:
+                print("^C")
+                continue
+                
+            try:
+                resume = self.process_command(cmd)
+                if resume:
+                    break
+            except Exception:
+                log.exception("Unhandled exception processing: %r", cmd)
+                
+    def process_command(self, cmd):
+        """ Actually process the command from the user. """
+        if len(cmd) == 0 and len(self.debugger_shortcut) != 0:
+            cmd = self.debugger_shortcut
+            print("Using: %s" % " ".join(cmd))
+        else:
+            self.debugger_shortcut = cmd
+            
+        if len(cmd) == 0:
+            return False
+            
+        if len(cmd) == 1 and cmd[0] in ("continue", "c"):
+            self.single_step = False
+            return True
+            
+        elif len(cmd) == 1 and cmd[0] in ("step", "s"):
+            self.single_step = True
+            return True
+            
+        elif len(cmd) == 1 and cmd[0] in ("quit", "q"):
+            sys.exit(0)
+            
+        elif len(cmd) == 1 and cmd[0] in ("dump", "d"):
+            self.dump_regs()
+            
+        elif len(cmd) == 2 and cmd[0] in ("stack", "st"):
+            self.dump_stack(int(cmd[1]))
+            
+        elif len(cmd) >= 1 and cmd[0] == "info":
+            self.debugger_shortcut = []
+            if len(cmd) == 2 and cmd[1] in ("breakpoints", "break"):
+                print("Breakpoints:")
+                for breakpoint in self.breakpoints:
+                    print("  %04x:%04x" % breakpoint)
+                    
+        elif len(cmd) == 2 and cmd[0] == "break":
+            self.debugger_shortcut = []
+            (pbr, pc) = cmd[1].split(":")
+            self.breakpoints.append((int(pbr, 16), int(pc, 16)))
+            
+        elif len(cmd) == 2 and cmd[0] == "clear":
+            self.debugger_shortcut = []
+            if cmd[1] == "all":
+                self.breakpoints = []
+            elif cmd[1] == "dump":
+                self.dump_enabled = False
+            else:
+                (pbr, pc) = cmd[1].split(":")
+                self.breakpoints.remove((int(pbr, 16), int(pc, 16)))
+                    
+        elif len(cmd) >= 1 and cmd[0] == "set":
+            self.debugger_shortcut = []
+            if len(cmd) == 2 and cmd[1] == "dump":
+                self.dump_enabled = True
+                self.dump_regs()
+                

@@ -39,7 +39,20 @@ class Console(object):
         debugger = self.debugger
         
         cpu.regs.PC = self.mem.read_word(0x00, 0xFFFC)
-        while True:
-            debugger.poll()
-            cpu.fetch()
+        try:
+            while True:
+                debugger.poll()
+                cpu.fetch()
+                
+        except Exception:
+            debugger.dump_regs()
+            log.exception("Unhandled exception at PBR:PB %02x:%04x", cpu.regs.PBR, cpu.regs.PC)
             
+            # Stop in the debugger one last time so we can inspect the state of the system.
+            debugger.enter_debugger()
+            
+    def control_c_handler(self, _signum, _frame):
+        """ Control-C handler to enter single-step mode. """
+        log.warning("Control-C")
+        self.debugger.single_step = True
+        
