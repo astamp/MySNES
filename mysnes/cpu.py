@@ -207,6 +207,7 @@ class InvalidOpcodeException(Exception):
         return "Invalid opcode: 0x%02x at %02x:%04x" % (self.opcode, self.pbr, self.pc)
         
 class Cpu65c816(object):
+    """ 65c816 CPU for MySNES. """
     def __init__(self, console):
         self.console = console
         self.psr = ProcessorStatusRegister()
@@ -238,16 +239,19 @@ class Cpu65c816(object):
         
     # ********** Instruction fetch and decode functions **********
     def read_instruction_byte(self):
+        """ Fetch the next byte from PBR:PC and increment PC. """
         value = self.console.mem.read_byte(self.regs.PBR, self.regs.PC)
         self.regs.PC += 1
         return value
         
     def read_instruction_word(self):
+        """ Fetch the next word from PBR:PC and increment PC. """
         value = self.console.mem.read_word(self.regs.PBR, self.regs.PC)
         self.regs.PC += 2
         return value
         
     def fetch(self):
+        """ Fetch, decode, and execute the next instruction at PBR:PC. """
         pbr, pc = self.regs.PBR, self.regs.PC
         opcode = self.read_instruction_byte()
         
