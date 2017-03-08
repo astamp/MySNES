@@ -10,7 +10,7 @@ from .console import Console
 
 # Logging setup
 import logging
-log = logging.getLogger("main")
+log = logging.getLogger("main") # pylint: disable=invalid-name
 
 # Constants
 
@@ -20,6 +20,7 @@ log = logging.getLogger("main")
 
 # Main application
 def main():
+    """ Creates console and runs the event loop. """
     log_level = logging.DEBUG# if options.debug else logging.INFO
     log_formatter = logging.Formatter("%(asctime)s.%(msecs)03d %(name)s(%(levelname)s): %(message)s", "%m/%d %H:%M:%S")
     stderr_handler = logging.StreamHandler()
