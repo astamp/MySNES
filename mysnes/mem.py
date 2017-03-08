@@ -14,7 +14,7 @@ from .mmio import MMIO
 
 # Logging setup
 import logging
-log = logging.getLogger(__name__) # pylint: disable=C0103
+log = logging.getLogger(__name__) # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 # Constants
