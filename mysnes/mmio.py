@@ -3,11 +3,10 @@ mmio - Memory mapped I/O registers
 """
 
 # Standard library imports
-import array
 
 # Logging setup
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__) # pylint: disable=C0103
 log.addHandler(logging.NullHandler())
 
 # Constants
@@ -16,6 +15,7 @@ log.addHandler(logging.NullHandler())
 
 # Classes
 class MMIO(object):
+    """ Mock memory mapped I/O bank for MySNES. """
     def __getitem__(self, key):
         # log.debug("MMIO read 0x%04x", key)
         return 0
@@ -23,3 +23,4 @@ class MMIO(object):
     def __setitem__(self, key, value):
         # log.debug("MMIO write 0x%04x -> 0x%02x", key, value)
         pass
+        
