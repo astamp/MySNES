@@ -14,7 +14,7 @@ from .mmio import MMIO
 
 # Logging setup
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__) # pylint: disable=C0103
 log.addHandler(logging.NullHandler())
 
 # Constants
@@ -27,6 +27,7 @@ SRAM_SIZE = 0x8000
 
 # Classes
 class LoRomMemoryMap(object):
+    """ Memory bank/address decoder for "LoROM" cartridges. """
     def __init__(self, rom_data):
         self.mmio = MMIO()
         self.lo_rom = array.array("B", rom_data)
@@ -76,22 +77,26 @@ class LoRomMemoryMap(object):
                 return self.lo_rom, (masked_bank * 0x8000) + (address & 0x7FFF), False
                 
     def read_byte(self, bank, address):
-        memory, offset, writable = self.decode(bank, address)
+        """ Read a byte from the given bank/address pair. """
+        memory, offset, _writable = self.decode(bank, address)
         # log.debug("read_byte(%02x:%04x) -> %d, %r", bank, address, offset, writable)
         return memory[offset]
         
     def read_word(self, bank, address):
-        memory, offset, writable = self.decode(bank, address)
+        """ Read a word from the given bank/address pair. """
+        memory, offset, _writable = self.decode(bank, address)
         # log.debug("read_word(%02x:%04x) -> %d, %r", bank, address, offset, writable)
         return memory[offset + 1] << 8 | memory[offset]
         
     def write_byte(self, bank, address, value):
+        """ Write a byte to the given bank/address pair. """
         memory, offset, writable = self.decode(bank, address)
         # log.debug("write_byte(%02x:%04x) -> %d, %r", bank, address, offset, writable)
         if writable:
             memory[offset] = value
         
     def write_word(self, bank, address, value):
+        """ Write a word to the given bank/address pair. """
         memory, offset, writable = self.decode(bank, address)
         # log.debug("write_word(%02x:%04x) -> %d, %r", bank, address, offset, writable)
         if writable:
