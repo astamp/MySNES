@@ -14,7 +14,7 @@ from .debugger import Debugger
 
 # Logging setup
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__) # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 # Constants
@@ -23,6 +23,7 @@ log.addHandler(logging.NullHandler())
 
 # Classes
 class Console(object):
+    """ Main console object containing all other components. """
     def __init__(self, filepath):
         self.cpu = Cpu65c816(self)
         self.rom = RomImage(filepath)
@@ -33,6 +34,7 @@ class Console(object):
         self.debugger = Debugger(self)
         
     def run(self):
+        """ Main event loop for MySNES. """
         cpu = self.cpu
         debugger = self.debugger
         
