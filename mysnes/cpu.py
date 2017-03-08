@@ -214,6 +214,7 @@ class Cpu65c816(object):
         self.regs = Registers()
         
         self.decode_table = {
+            0x08 : self.opcode_php,
             0x10 : self.opcode_bpl,
             0x18 : self.opcode_clc,
             0x1B : self.opcode_tcs,
@@ -262,9 +263,15 @@ class Cpu65c816(object):
             raise InvalidOpcodeException(opcode, pbr, pc)
         
     # ********** Stack management functions **********
-    def _push(self, value):
+    def _push_byte(self, value):
+        """ Pushes the given byte onto the stack. """
+        self.console.mem.write_byte(0x00, self.regs.SP, value)
+        self.regs.SP -= 1
+
+    def _push_word(self, value):
         """ Pushes the given word onto the stack. """
         self.console.mem.write_word(0x00, self.regs.SP, value)
+        self.regs.SP -= 2
         
     # ********** Opcode handler functions **********
     def opcode_sei(self):
@@ -442,7 +449,12 @@ class Cpu65c816(object):
     def opcode_jsr(self):
         """ JSR - Jump subroutine absolute. """
         destination = self.read_instruction_word()
-        self._push(self.regs.PC)
+        self._push_word(self.regs.PC)
         self.regs.PC = destination
         return 6
-            
+        
+    def opcode_php(self):
+        """ PHP - Push processor status register. """
+        self._push_byte(self.psr.value)
+        return 3
+        
