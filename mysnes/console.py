@@ -49,6 +49,7 @@ class Console(object):
             log.exception("Unhandled exception at PBR:PB %02x:%04x", cpu.regs.PBR, cpu.regs.PC)
             
             # Stop in the debugger one last time so we can inspect the state of the system.
+            debugger.debugger_shortcut = ["quit"]
             debugger.enter_debugger()
             
     def control_c_handler(self, _signum, _frame):
