@@ -5,14 +5,13 @@ https://en.wikibooks.org/wiki/Super_NES_Programming/SNES_memory_map#The_SNES_hea
 """
 
 # Standard library imports
-import struct
 
 # Six imports
 import six
 
 # Logging setup
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__) # pylint: disable=invalid-name
 log.addHandler(logging.NullHandler())
 
 # Constants
@@ -24,6 +23,7 @@ ROM_TYPE_OFFSET = 0x15
 
 # Classes
 class RomType(object):
+    """ "Enum" for known ROM types. """
     LO_ROM = 0x20
     HI_ROM = 0x21
     LO_ROM_FAST_ROM = 0x30
@@ -34,6 +34,7 @@ class RomType(object):
     VALID_TYPES = (LO_ROM, HI_ROM, LO_ROM_FAST_ROM, HI_ROM_FAST_ROM, EX_LO_ROM, EX_HI_ROM)
     
 class RomImage(object):
+    """ ROM loader class containing type, optional header, and data. """
     def __init__(self, filepath):
         self.type = None
         
@@ -59,8 +60,8 @@ class RomImage(object):
             self.type = lo_rom_type
         else:
             hi_rom_type = six.indexbytes(self.data, HI_ROM_HEADER + ROM_TYPE_OFFSET)
-            if lo_rom_type in RomType.VALID_TYPES:
-                self.type = lo_rom_type
+            if hi_rom_type in RomType.VALID_TYPES:
+                self.type = hi_rom_type
             else:
                 raise ValueError("Unable to determine cartridge type!")
                 
