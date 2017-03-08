@@ -27,6 +27,7 @@ def signed_byte(value):
     
 # Classes
 class ByteRegisters(Structure):
+    """ Structure for byte access to registers. """
     _fields_ = [
         ("A", c_ubyte),
         ("B", c_ubyte),
@@ -45,6 +46,7 @@ class ByteRegisters(Structure):
     ]
     
 class WordRegisters(Structure):
+    """ Structure for word access to registers. """
     _fields_ = [
         ("C", c_ushort), # 16-bit accumulator
         ("X", c_ushort), # Index X
@@ -55,6 +57,7 @@ class WordRegisters(Structure):
     ]
     
 class Registers(Union):
+    """ Union for byte/word access to registers. """
     _anonymous_ = ("byte", "word")
     _fields_ = [
         ("byte", ByteRegisters),
@@ -101,6 +104,7 @@ class Registers(Union):
         setattr(self, key, value)
         
 class ProcessorStatusRegister(object):
+    """ Processor status register "P". """
     CARRY = 0x01
     ZERO = 0x02
     IRQ_DISABLE = 0x04
@@ -171,18 +175,22 @@ class ProcessorStatusRegister(object):
         
     @property
     def byte_access(self):
+        """ Are memory/accumulator accesses 8 bits wide? """
         return self.emulation or self.memory_select
     
     @property
     def word_access(self):
+        """ Are memory/accumulator accesses 16 bits wide? """
         return not (self.emulation or self.memory_select)
         
     @property
     def byte_index(self):
+        """ Are index registers (X/Y) 8 bits wide? """
         return self.emulation or self.index_register_select
     
     @property
     def word_index(self):
+        """ Are index registers (X/Y) 16 bits wide? """
         return not (self.emulation or self.index_register_select)
         
     def set_nz_8(self, value):
