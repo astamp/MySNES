@@ -452,13 +452,13 @@ class Cpu65c816(object):
         if self.psr.byte_access:
             value = self.console.mem.read_byte(self.regs.DBR, address)
             result = self.regs.A - value
-            self.psr.set_nz_8(self.regs.A)
+            self.psr.set_nz_8(result)
             self.psr.borrow = self.regs.A < value
             return 4
         else:
             value = self.console.mem.read_word(self.regs.DBR, address)
             result = self.regs.C - value
-            self.psr.set_nz_16(self.regs.C)
+            self.psr.set_nz_16(result)
             self.psr.borrow = self.regs.C < value
             return 5
             
