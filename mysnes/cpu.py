@@ -193,6 +193,16 @@ class ProcessorStatusRegister(object):
         """ Are index registers (X/Y) 16 bits wide? """
         return not (self.emulation or self.index_register_select)
         
+    @property
+    def borrow(self):
+        """ The carry flag is 0 if a borrow is required and 1 if none is required. """
+        return not self.carry
+        
+    @borrow.setter
+    def borrow(self, value):
+        """ Set to true if a borrow is required (left < right in subtraction). """
+        self.carry = not value
+        
     def set_nz_8(self, value):
         """ Set the N and Z flags from an 8-bit result. """
         self.zero = value == 0
@@ -440,16 +450,16 @@ class Cpu65c816(object):
         """ CMP abs - Compares the accumulator with the value at the given address. """
         address = self.read_instruction_word()
         if self.psr.byte_access:
-            value = self.mem.read_byte(self.regs.DBR, address)
+            value = self.console.mem.read_byte(self.regs.DBR, address)
             result = self.regs.A - value
             self.psr.set_nz_8(self.regs.A)
-            self.psr.carry = self.regs.A >= value # Opposite of what makes sense.
+            self.psr.borrow = self.regs.A < value
             return 4
         else:
-            value = self.mem.read_word(self.regs.DBR, address)
+            value = self.console.mem.read_word(self.regs.DBR, address)
             result = self.regs.C - value
             self.psr.set_nz_16(self.regs.C)
-            self.psr.carry = self.regs.C >= value # Opposite of what makes sense.
+            self.psr.borrow = self.regs.C < value
             return 5
             
     def opcode_dex(self):
