@@ -241,6 +241,7 @@ class Cpu65c816(object):
             0xA9 : self.opcode_lda_immediate,
             0xC2 : self.opcode_rep,
             0xCA : self.opcode_dex,
+            0xCD : self.opcode_cmp_absolute,
             0xE2 : self.opcode_sep,
             0xE9 : self.opcode_sbc_immediate,
             0xFB : self.opcode_xce,
@@ -434,6 +435,22 @@ class Cpu65c816(object):
             self.regs.C = (self.regs.C - value) - (0 if self.psr.carry else 1)
             self.psr.set_nz_16(self.regs.C)
             return 3
+            
+    def opcode_cmp_absolute(self):
+        """ CMP abs - Compares the accumulator with the value at the given address. """
+        address = self.read_instruction_word()
+        if self.psr.byte_access:
+            value = self.mem.read_byte(self.regs.DBR, address)
+            result = self.regs.A - value
+            self.psr.set_nz_8(self.regs.A)
+            self.psr.carry = self.regs.A >= value # Opposite of what makes sense.
+            return 4
+        else:
+            value = self.mem.read_word(self.regs.DBR, address)
+            result = self.regs.C - value
+            self.psr.set_nz_16(self.regs.C)
+            self.psr.carry = self.regs.C >= value # Opposite of what makes sense.
+            return 5
             
     def opcode_dex(self):
         """ DEX - Decrement X. """
