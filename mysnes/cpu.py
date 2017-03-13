@@ -252,6 +252,7 @@ class Cpu65c816(object):
             0xC2 : self.opcode_rep,
             0xCA : self.opcode_dex,
             0xCD : self.opcode_cmp_absolute,
+            0xD0 : self.opcode_bne,
             0xE2 : self.opcode_sep,
             0xE9 : self.opcode_sbc_immediate,
             0xFB : self.opcode_xce,
@@ -473,11 +474,20 @@ class Cpu65c816(object):
         return 2
         
     def opcode_bpl(self):
-        """ BPL - Branch if plus. """
+        """ BPL - Branch if plus (n=0). """
         offset = self.read_instruction_byte()
         if not self.psr.negative:
             self.regs.PC += signed_byte(offset)
-            return 3 # TODO: +1 for page boundary?
+            return 3 # TODO: +1 for page boundary in emulation mode?
+        else:
+            return 2
+            
+    def opcode_bne(self):
+        """ BNE - Branch if not equal (z=0). """
+        offset = self.read_instruction_byte()
+        if not self.psr.zero:
+            self.regs.PC += signed_byte(offset)
+            return 3 # TODO: +1 for page boundary in emulation mode?
         else:
             return 2
             
